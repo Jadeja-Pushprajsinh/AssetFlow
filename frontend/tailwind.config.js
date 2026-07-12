@@ -16,6 +16,14 @@ export default {
         },
         surface: '#f5f5f5',
         ink:     '#333333',
+        amber: {
+          DEFAULT: '#f59e0b', // Used for Under Maintenance (text/icon)
+          light:   '#fef3c7', // Used for Under Maintenance pill bg
+        },
+        red: {
+          DEFAULT: '#ef4444', // Used for Lost (text/icon)
+          light:   '#fee2e2', // Used for Lost pill bg
+        },
       },
       fontFamily: {
         sans: ['Montserrat', 'sans-serif'],

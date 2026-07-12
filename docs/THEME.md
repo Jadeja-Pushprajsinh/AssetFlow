@@ -15,8 +15,12 @@ colors in components — always reference a named token.
 | `teal-darker` | `#00796b` | Headings, logo text |
 | `teal-light` | `#aeeeee` | Section backgrounds, accent bands |
 | `teal-lighter` | `#b2ebf2` | Tabs / pills background (active & inactive) |
-| `surface` | `#f5f5f5` | Neutral page / card background (whitesmoke) |
+| `surface` | `#f5f5f5` | Page background |
 | `ink` | `#333333` | Body text |
+| `amber` | `#f59e0b` | Under Maintenance status text/icon |
+| `amber-light` | `#fef3c7` | Under Maintenance status pill background |
+| `red` | `#ef4444` | Lost status text/icon |
+| `red-light` | `#fee2e2` | Lost status pill background |
 
 > **Rule:** hover states shift one step darker on the same ramp
 > (e.g. `bg-teal` → `hover:bg-teal-dark`). Never use an arbitrary hover color.
