@@ -1,0 +1,3 @@
+"""
+AssetFlow Django project init.
+"""
