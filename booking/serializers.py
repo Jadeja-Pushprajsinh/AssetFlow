@@ -18,7 +18,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'status', 'computed_status', 'purpose',
             'created_at', 'updated_at',
         )
-        read_only_fields = ('id', 'status', 'booked_by', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'booked_by', 'created_at', 'updated_at')
 
     def validate(self, data):
         asset = data.get('asset') or (self.instance.asset if self.instance else None)
@@ -26,15 +26,14 @@ class BookingSerializer(serializers.ModelSerializer):
         end = data.get('end_time') or (self.instance.end_time if self.instance else None)
 
         if start and end and end <= start:
-            raise serializers.ValidationError("end_time must be after start_time.")
+            raise serializers.ValidationError({'end_time': 'end_time must be after start_time.'})
 
         if start and start < timezone.now():
-            raise serializers.ValidationError("Bookings cannot start in the past.")
+            raise serializers.ValidationError({'start_time': 'Bookings cannot start in the past.'})
 
         if asset and not asset.is_bookable:
-            raise serializers.ValidationError("This asset is not available for booking.")
+            raise serializers.ValidationError({'asset': 'This asset is not available for booking.'})
 
-        # Overlap check: existing.start < new.end AND existing.end > new.start
         if asset and start and end:
             overlap_qs = Booking.objects.filter(
                 asset=asset,
@@ -46,7 +45,7 @@ class BookingSerializer(serializers.ModelSerializer):
                 overlap_qs = overlap_qs.exclude(pk=self.instance.pk)
             if overlap_qs.exists():
                 raise serializers.ValidationError(
-                    "This asset is already booked for the requested time slot."
+                    {'non_field_errors': ['This asset is already booked for the requested time slot.']}
                 )
 
         return data

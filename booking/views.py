@@ -29,13 +29,36 @@ class BookingViewSet(viewsets.ModelViewSet):
     def cancel(self, request, pk=None):
         """PATCH /api/bookings/<pk>/cancel/"""
         booking = self.get_object()
-        if booking.status not in ('upcoming',):
+        if booking.status not in ('upcoming', 'ongoing'):
             return Response(
-                {'detail': 'Only upcoming bookings can be cancelled.'},
+                {'detail': 'Only upcoming or ongoing bookings can be cancelled.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         booking.status = 'cancelled'
-        booking.save()
+        booking.save(update_fields=['status', 'updated_at'])
+        return Response(BookingSerializer(booking).data)
+
+    @action(detail=True, methods=['patch'], url_path='reschedule')
+    def reschedule(self, request, pk=None):
+        """PATCH /api/bookings/<pk>/reschedule/"""
+        booking = self.get_object()
+        if booking.status == 'cancelled':
+            return Response(
+                {'detail': 'Cancelled bookings cannot be rescheduled.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = BookingSerializer(
+            booking,
+            data=request.data,
+            partial=True,
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        booking.refresh_from_db()
+        booking.status = 'upcoming'
+        booking.save(update_fields=['status', 'updated_at'])
         return Response(BookingSerializer(booking).data)
 
     @action(detail=False, methods=['get'], url_path='calendar')
