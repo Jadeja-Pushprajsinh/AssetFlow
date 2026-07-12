@@ -1,19 +1,37 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from .models import Department, AssetCategory
 from .serializers import DepartmentSerializer, AssetCategorySerializer
+from accounts.permissions import IsAdminOrAssetManager, IsEmployee
 
-class IsAdminOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return request.user and request.user.is_authenticated
-        return request.user and request.user.is_staff
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    queryset = Department.objects.all()
+    """
+    GET  (list/retrieve) — any authenticated Employee
+    POST/PUT/PATCH/DELETE — Admin or Asset Manager only
+    """
+    queryset = Department.objects.select_related('head__user', 'parent_department').prefetch_related('sub_departments').all()
     serializer_class = DepartmentSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    filterset_fields = ['is_active', 'parent_department']
+    search_fields = ['name']
+    ordering_fields = ['name', 'created_at']
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return [IsEmployee()]
+        return [IsAdminOrAssetManager()]
+
 
 class AssetCategoryViewSet(viewsets.ModelViewSet):
+    """
+    GET  — any authenticated Employee
+    Writes — Admin or Asset Manager only
+    """
     queryset = AssetCategory.objects.all()
     serializer_class = AssetCategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
+    search_fields = ['name']
+    ordering_fields = ['name', 'created_at']
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return [IsEmployee()]
+        return [IsAdminOrAssetManager()]
